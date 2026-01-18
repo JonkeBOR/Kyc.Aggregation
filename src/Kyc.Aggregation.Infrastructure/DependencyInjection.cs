@@ -41,16 +41,11 @@ public static class DependencyInjection
             ?? "https://customerdataapi.azurewebsites.net/api";
         var timeoutSeconds = configuration.GetSection("CustomerDataApi:TimeoutSeconds").Get<int?>() ?? 30;
 
-        services.AddHttpClient<CustomerDataApiClient>(client =>
+        services.AddHttpClient<ICustomerDataApiClient, CustomerDataApiClient>(client =>
         {
             client.BaseAddress = new Uri(apiBaseUrl);
             client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
         });
-
-        // Register the combined client for all three interfaces
-        services.AddScoped<ICustomerPersonalDetailsClient>(sp => sp.GetRequiredService<CustomerDataApiClient>());
-        services.AddScoped<ICustomerContactDetailsClient>(sp => sp.GetRequiredService<CustomerDataApiClient>());
-        services.AddScoped<IKycFormClient>(sp => sp.GetRequiredService<CustomerDataApiClient>());
 
         return services;
     }

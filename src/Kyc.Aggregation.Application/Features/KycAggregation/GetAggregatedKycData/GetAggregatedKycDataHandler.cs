@@ -13,10 +13,8 @@ public class GetAggregatedKycDataHandler : IRequestHandler<GetAggregatedKycDataQ
 {
     private readonly IKycHotCache _hotCache;
     private readonly IKycSnapshotStore _snapshotStore;
-    private readonly ICustomerPersonalDetailsClient _personalDetailsClient;
-    private readonly ICustomerContactDetailsClient _contactDetailsClient;
-    private readonly IKycFormClient _kycFormClient;
     private readonly IClock _clock;
+    private readonly ICustomerDataApiClient _customerDataApiClient;
     private readonly IKycAggregationService _aggregationService;
     private readonly ILogger<GetAggregatedKycDataHandler> _logger;
 
@@ -27,18 +25,14 @@ public class GetAggregatedKycDataHandler : IRequestHandler<GetAggregatedKycDataQ
     public GetAggregatedKycDataHandler(
         IKycHotCache hotCache,
         IKycSnapshotStore snapshotStore,
-        ICustomerPersonalDetailsClient personalDetailsClient,
-        ICustomerContactDetailsClient contactDetailsClient,
-        IKycFormClient kycFormClient,
+        ICustomerDataApiClient customerDataApiClient,
         IClock clock,
         IKycAggregationService aggregationService,
         ILogger<GetAggregatedKycDataHandler> logger)
     {
         _hotCache = hotCache;
         _snapshotStore = snapshotStore;
-        _personalDetailsClient = personalDetailsClient;
-        _contactDetailsClient = contactDetailsClient;
-        _kycFormClient = kycFormClient;
+        _customerDataApiClient = customerDataApiClient;
         _clock = clock;
         _aggregationService = aggregationService;
         _logger = logger;
@@ -68,9 +62,9 @@ public class GetAggregatedKycDataHandler : IRequestHandler<GetAggregatedKycDataQ
 
         // 3. Fetch from external APIs in parallel
         _logger.LogInformation("Fetching KYC data from external APIs for SSN: {Ssn}", ssn);
-        var personalDetailsTask = _personalDetailsClient.GetPersonalDetailsAsync(ssn, cancellationToken);
-        var contactDetailsTask = _contactDetailsClient.GetContactDetailsAsync(ssn, cancellationToken);
-        var kycFormTask = _kycFormClient.GetKycFormAsync(ssn, _clock.UtcNow, cancellationToken);
+        var personalDetailsTask = _customerDataApiClient.GetPersonalDetailsAsync(ssn, cancellationToken);
+        var contactDetailsTask = _customerDataApiClient.GetContactDetailsAsync(ssn, cancellationToken);
+        var kycFormTask = _customerDataApiClient.GetKycFormAsync(ssn, _clock.UtcNow, cancellationToken);
 
         try
         {

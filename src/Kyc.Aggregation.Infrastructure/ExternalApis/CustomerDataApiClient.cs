@@ -2,6 +2,7 @@ using Kyc.Aggregation.Application.Abstractions;
 using Kyc.Aggregation.Application.Models;
 using Kyc.Aggregation.Infrastructure.ExternalApis.Models;
 using Microsoft.Extensions.Logging;
+using static Kyc.Aggregation.Application.Abstractions.ICustomerDataApiClient;
 
 namespace Kyc.Aggregation.Infrastructure.ExternalApis;
 
@@ -9,10 +10,7 @@ namespace Kyc.Aggregation.Infrastructure.ExternalApis;
 /// HTTP client for the Customer Data API.
 /// Implements all three endpoints: personal details, contact details, and KYC forms.
 /// </summary>
-public class CustomerDataApiClient : 
-    ICustomerPersonalDetailsClient, 
-    ICustomerContactDetailsClient, 
-    IKycFormClient
+public class CustomerDataApiClient : ICustomerDataApiClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<CustomerDataApiClient> _logger;

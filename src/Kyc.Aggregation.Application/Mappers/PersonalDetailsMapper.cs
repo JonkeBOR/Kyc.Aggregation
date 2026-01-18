@@ -8,7 +8,7 @@ namespace Kyc.Aggregation.Application.Mappers;
 /// </summary>
 public static class PersonalDetailsMapper
 {
-    public static PersonalDetailsData Map(PersonalDetailsResponseDto dto)
+    public static PersonalDetailsData ToPersonalDetailsData(this PersonalDetailsResponseDto dto)
     {
         return new PersonalDetailsData
         {

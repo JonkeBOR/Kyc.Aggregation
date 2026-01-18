@@ -1,13 +1,6 @@
 # Kyc.Aggregation
 Service for aggregating KYC data with persistent caching
 
-Here is a **clean, interview-ready `README.md`** you can drop straight into the repository.
-It explains **architecture, structure, and intent**, without going into code-level detail — ideal for reviewers and for guiding GitHub Copilot.
-
----
-
-# KYC Aggregation Service
-
 ## Overview
 
 This repository contains a **.NET backend service** that implements a **KYC Aggregation API**.
@@ -30,8 +23,9 @@ Key characteristics:
 The solution follows **Clean Architecture principles** with **explicit dependency direction**:
 
 ```
-Api → Application → Contracts
-Api → Infrastructure → Application → Contracts
+Application → Contracts
+Infrastructure → Application + Contracts
+Api → Application + Contracts (+ Infrastructure for DI registration)
 ```
 
 * Dependencies always point **inward**
@@ -87,7 +81,6 @@ Implements **use-case orchestration and application-level policy**.
 * Aggregation logic
 * Cache and persistence policies (freshness, fallback rules)
 * Interfaces (ports) for:
-
   * External APIs
   * Persistent storage
   * In-memory caching
@@ -109,9 +102,8 @@ Implements **technical and external concerns**.
 **Contains:**
 
 * Typed HTTP clients for the external Customer Data API
-* Vendor-specific DTOs
 * Entity Framework Core DbContext and snapshot entities
-* Persistent cache implementation (database-backed)
+* Persistent cache implementation (database-backend)
 * Hot cache implementation using `IMemoryCache`
 
 **Rules:**
@@ -147,11 +139,9 @@ HTTP hosting and delivery mechanism.
 This service uses **CQRS** with **MediatR**.
 
 * The API exposes a **single read-only query**:
-
   * `GetAggregatedKycData`
 * Controllers translate HTTP requests into queries
 * Handlers orchestrate:
-
   1. In-memory cache lookup
   2. Persistent snapshot lookup
   3. External API calls (if needed)
@@ -183,10 +173,14 @@ The service implements **two levels of caching**:
 
 ## Error Handling
 
-* Application-level errors are translated into meaningful API responses
-* System-level errors are logged
-* Exception handling is centralized via middleware
-* Controllers do not contain try/catch logic
+* Exception handling is centralized via middleware (API layer)
+* User-facing errors are returned as RFC7807 `application/problem+json` with a `traceId`
+* Application errors use typed exceptions:
+  * `NotFoundException`  404
+  * `ValidationException`  400
+  * `ExternalDependencyException`  503
+* System-level errors are logged with appropriate severity
+* Controllers and handlers remain thin and do not contain HTTP-specific error mapping
 
 ---
 

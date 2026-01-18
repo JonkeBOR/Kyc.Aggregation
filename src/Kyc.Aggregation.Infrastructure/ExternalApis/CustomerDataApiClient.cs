@@ -1,4 +1,5 @@
 using Kyc.Aggregation.Application.Abstractions;
+using Kyc.Aggregation.Application.Exceptions;
 using Kyc.Aggregation.Application.Models.ExternalApis;
 using Microsoft.Extensions.Logging;
 
@@ -22,7 +23,9 @@ public class CustomerDataApiClient(HttpClient httpClient, ILogger<CustomerDataAp
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning(warningMessage, response.StatusCode);
-                return default;
+                throw new ExternalDependencyException(
+                    dependencyName: "CustomerDataApi",
+                    message: $"Customer Data API returned non-success status code {(int)response.StatusCode} ({response.StatusCode}) for '{relativePath}'.");
             }
 
             var json = await response.Content.ReadAsStringAsync(ct);
@@ -31,7 +34,13 @@ public class CustomerDataApiClient(HttpClient httpClient, ILogger<CustomerDataAp
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error performing GET {RelativePath}", relativePath);
-            throw;
+            if (ex is ExternalDependencyException)
+                throw;
+
+            throw new ExternalDependencyException(
+                dependencyName: "CustomerDataApi",
+                message: $"Customer Data API request failed for '{relativePath}'.",
+                innerException: ex);
         }
     }
 

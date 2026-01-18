@@ -10,14 +10,9 @@ namespace Kyc.Aggregation.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/kyc-data")]
-public class KycAggregationController : ControllerBase
+public class KycAggregationController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public KycAggregationController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
+    private readonly IMediator _mediator = mediator;
 
     /// <summary>
     /// Gets aggregated KYC data for a customer by SSN.

@@ -27,11 +27,6 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
             _logger.LogWarning(ex, "Validation error: {Message}", ex.Message);
             await WriteProblemDetailsAsync(context, StatusCodes.Status400BadRequest, "Bad Request", ex.Message);
         }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning(ex, "Invalid argument: {Message}", ex.Message);
-            await WriteProblemDetailsAsync(context, StatusCodes.Status400BadRequest, "Bad Request", "Invalid input provided.");
-        }
         catch (ExternalDependencyException ex)
         {
             _logger.LogError(ex, "External dependency failure ({DependencyName}): {Message}", ex.DependencyName, ex.Message);

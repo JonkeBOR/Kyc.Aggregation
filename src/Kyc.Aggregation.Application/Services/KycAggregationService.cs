@@ -1,19 +1,11 @@
-using Kyc.Aggregation.Application.Abstractions;
 using Kyc.Aggregation.Application.Exceptions;
 using Kyc.Aggregation.Application.Models;
 using Kyc.Aggregation.Contracts;
-using Microsoft.Extensions.Logging;
 
 namespace Kyc.Aggregation.Application.Services;
 
-/// <summary>
-/// Service that aggregates customer data from multiple sources into a single KYC response.
-/// </summary>
 public interface IKycAggregationService
 {
-    /// <summary>
-    /// Aggregates personal details, contact details, and KYC form data into a single DTO.
-    /// </summary>
     AggregatedKycDataDto AggregateData(
         string ssn,
         PersonalDetailsData personalDetails,
@@ -21,31 +13,22 @@ public interface IKycAggregationService
         KycFormData? kycForm);
 }
 
-public class KycAggregationService(ILogger<KycAggregationService> logger) : IKycAggregationService
+public class KycAggregationService() : IKycAggregationService
 {
-    private readonly ILogger<KycAggregationService> _logger = logger;
-
     public AggregatedKycDataDto AggregateData(
         string ssn,
         PersonalDetailsData personalDetails,
         ContactDetailsData? contactDetails,
         KycFormData? kycForm)
     {
-        _logger.LogDebug("Aggregating KYC data for SSN: {Ssn}", ssn);
-
-        // Extract tax country from KYC form
         var taxCountry = ExtractTaxCountry(kycForm);
-        
-        // Extract income from KYC form
+       
         var income = ExtractIncome(kycForm);
 
-        // Extract address from contact details or KYC form
         var address = ExtractAddress(contactDetails);
 
-        // Extract phone number from contact details
         var phoneNumber = ExtractPhoneNumber(contactDetails);
 
-        // Extract email from contact details
         var email = ExtractEmail(contactDetails);
 
         return new AggregatedKycDataDto

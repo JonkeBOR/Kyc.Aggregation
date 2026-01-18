@@ -1,5 +1,6 @@
 using Kyc.Aggregation.Contracts;
 using Kyc.Aggregation.Application.Abstractions;
+using Kyc.Aggregation.Application.Mappers;
 using Kyc.Aggregation.Application.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -89,15 +90,20 @@ public class GetAggregatedKycDataHandler : IRequestHandler<GetAggregatedKycDataQ
         var contactDetails = contactDetailsTask.Result;
         var kycForm = kycFormTask.Result;
 
-        if (personalDetails == null)
+        if (personalDetails is null)
         {
             throw new InvalidOperationException($"Customer not found for SSN: {ssn}");
         }
 
-        // 4. Aggregate data
-        var aggregatedData = _aggregationService.AggregateData(ssn, personalDetails, contactDetails, kycForm);
+        // 4. Map vendor DTOs to application models
+        var mappedPersonalDetails = PersonalDetailsMapper.Map(personalDetails);
+        var mappedContactDetails = ContactDetailsMapper.Map(contactDetails);
+        var mappedKycForm = KycFormMapper.Map(kycForm);
 
-        // 5. Persist snapshot
+        // 5. Aggregate data
+        var aggregatedData = _aggregationService.AggregateData(ssn, mappedPersonalDetails, mappedContactDetails, mappedKycForm);
+
+        // 6. Persist snapshot
         var newSnapshot = new KycSnapshot
         {
             Ssn = ssn,
@@ -106,7 +112,7 @@ public class GetAggregatedKycDataHandler : IRequestHandler<GetAggregatedKycDataQ
         };
         await _snapshotStore.SaveSnapshotAsync(newSnapshot, cancellationToken);
 
-        // 6. Update hot cache
+        // 7. Update hot cache
         UpdateHotCache(ssn, aggregatedData);
 
         _logger.LogInformation("Successfully aggregated and cached KYC data for SSN: {Ssn}", ssn);

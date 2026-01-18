@@ -1,23 +1,28 @@
+using Kyc.Aggregation.Api;
+using Kyc.Aggregation.Api.Extensions;
+using Kyc.Aggregation.Application;
+using Kyc.Aggregation.Infrastructure;
+using Kyc.Aggregation.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Register services from each layer
+builder.Services
+    .AddApi()
+    .AddApplication()
+    .AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Initialize database on startup
+using (var scope = app.Services.CreateScope())
 {
-    app.MapOpenApi();
+    var dbContext = scope.ServiceProvider.GetRequiredService<KycDbContext>();
+    dbContext.Database.Migrate();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
+// Configure pipeline
+app.UseApiPipeline();
 
 app.Run();

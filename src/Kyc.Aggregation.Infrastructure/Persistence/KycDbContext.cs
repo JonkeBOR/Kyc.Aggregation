@@ -6,12 +6,8 @@ namespace Kyc.Aggregation.Infrastructure.Persistence;
 /// <summary>
 /// Entity Framework DbContext for KYC aggregation persistent storage.
 /// </summary>
-public class KycDbContext : DbContext
+public class KycDbContext(DbContextOptions<KycDbContext> options) : DbContext(options)
 {
-    public KycDbContext(DbContextOptions<KycDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<CustomerKycSnapshotEntity> CustomerKycSnapshots { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

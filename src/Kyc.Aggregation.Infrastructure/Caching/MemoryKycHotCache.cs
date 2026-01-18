@@ -8,18 +8,12 @@ namespace Kyc.Aggregation.Infrastructure.Caching;
 /// <summary>
 /// In-memory cache implementation for hot KYC data access.
 /// </summary>
-public class MemoryKycHotCache : IKycHotCache
+public class MemoryKycHotCache(IMemoryCache cache, ILogger<MemoryKycHotCache> logger) : IKycHotCache
 {
-    private readonly IMemoryCache _cache;
-    private readonly ILogger<MemoryKycHotCache> _logger;
+    private readonly IMemoryCache _cache = cache;
+    private readonly ILogger<MemoryKycHotCache> _logger = logger;
 
     private const string CacheKeyPrefix = "kyc:";
-
-    public MemoryKycHotCache(IMemoryCache cache, ILogger<MemoryKycHotCache> logger)
-    {
-        _cache = cache;
-        _logger = logger;
-    }
 
     public bool TryGetValue(string ssn, out AggregatedKycDataDto? data)
     {

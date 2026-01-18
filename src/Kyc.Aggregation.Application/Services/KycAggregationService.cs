@@ -20,14 +20,9 @@ public interface IKycAggregationService
         KycFormData? kycForm);
 }
 
-public class KycAggregationService : IKycAggregationService
+public class KycAggregationService(ILogger<KycAggregationService> logger) : IKycAggregationService
 {
-    private readonly ILogger<KycAggregationService> _logger;
-
-    public KycAggregationService(ILogger<KycAggregationService> logger)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger<KycAggregationService> _logger = logger;
 
     public AggregatedKycDataDto AggregateData(
         string ssn,

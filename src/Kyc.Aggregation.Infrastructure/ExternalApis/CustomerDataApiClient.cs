@@ -8,16 +8,10 @@ namespace Kyc.Aggregation.Infrastructure.ExternalApis;
 /// HTTP client for the Customer Data API.
 /// Returns raw vendor DTOs - all mapping to application models is handled in the Application layer.
 /// </summary>
-public class CustomerDataApiClient : ICustomerDataApiClient
+public class CustomerDataApiClient(HttpClient httpClient, ILogger<CustomerDataApiClient> logger) : ICustomerDataApiClient
 {
-    private readonly HttpClient _httpClient;
-    private readonly ILogger<CustomerDataApiClient> _logger;
-
-    public CustomerDataApiClient(HttpClient httpClient, ILogger<CustomerDataApiClient> logger)
-    {
-        _httpClient = httpClient;
-        _logger = logger;
-    }
+    private readonly HttpClient _httpClient = httpClient;
+    private readonly ILogger<CustomerDataApiClient> _logger = logger;
 
     public async Task<PersonalDetailsResponseDto?> GetPersonalDetailsAsync(string ssn, CancellationToken ct = default)
     {

@@ -10,16 +10,10 @@ namespace Kyc.Aggregation.Infrastructure.Caching;
 /// <summary>
 /// Entity Framework-backed persistent snapshot store for KYC data.
 /// </summary>
-public class EfKycSnapshotStore : IKycSnapshotStore
+public class EfKycSnapshotStore(KycDbContext dbContext, ILogger<EfKycSnapshotStore> logger) : IKycSnapshotStore
 {
-    private readonly KycDbContext _dbContext;
-    private readonly ILogger<EfKycSnapshotStore> _logger;
-
-    public EfKycSnapshotStore(KycDbContext dbContext, ILogger<EfKycSnapshotStore> logger)
-    {
-        _dbContext = dbContext;
-        _logger = logger;
-    }
+    private readonly KycDbContext _dbContext = dbContext;
+    private readonly ILogger<EfKycSnapshotStore> _logger = logger;
 
     public async Task<KycSnapshot?> GetLatestSnapshotAsync(string ssn, CancellationToken ct = default)
     {

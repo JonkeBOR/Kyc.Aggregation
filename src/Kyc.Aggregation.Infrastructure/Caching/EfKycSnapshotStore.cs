@@ -58,26 +58,26 @@ public class EfKycSnapshotStore : IKycSnapshotStore
 
     public async Task SaveSnapshotAsync(KycSnapshot snapshot, CancellationToken ct = default)
     {
-        try
-        {
-            var json = JsonSerializer.Serialize(snapshot.Data);
+        var json = JsonSerializer.Serialize(snapshot.Data);
 
-            var entity = new CustomerKycSnapshotEntity
+        var existing = await _dbContext.CustomerKycSnapshots
+            .SingleOrDefaultAsync(x => x.Ssn == snapshot.Ssn, ct);
+
+        if (existing is null)
+        {
+            _dbContext.CustomerKycSnapshots.Add(new CustomerKycSnapshotEntity
             {
                 Ssn = snapshot.Ssn,
                 DataJson = json,
                 FetchedAtUtc = snapshot.FetchedAtUtc
-            };
-
-            _dbContext.CustomerKycSnapshots.Update(entity);
-            await _dbContext.SaveChangesAsync(ct);
-
-            _logger.LogDebug("Snapshot saved for SSN {Ssn}", snapshot.Ssn);
+            });
         }
-        catch (Exception ex)
+        else
         {
-            _logger.LogError(ex, "Error saving snapshot for SSN {Ssn}", snapshot.Ssn);
-            throw;
+            existing.DataJson = json;
+            existing.FetchedAtUtc = snapshot.FetchedAtUtc;
         }
+
+        await _dbContext.SaveChangesAsync(ct);
     }
 }

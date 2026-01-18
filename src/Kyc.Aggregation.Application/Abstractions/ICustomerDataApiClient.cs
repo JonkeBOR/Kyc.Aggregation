@@ -22,16 +22,3 @@ public interface ICustomerDataApiClient
     Task<KycFormData?> GetKycFormAsync(string ssn, DateTime asOfDate, CancellationToken ct = default);
 
 }
-
-public class ContactDetailsData
-{
-    public string? Address { get; set; }
-    public string? Email { get; set; }
-    public string? PhoneNumber { get; set; }
-}
-
-public class PersonalDetailsData
-{
-    public required string FirstName { get; set; }
-    public required string LastName { get; set; }
-}

@@ -1,8 +1,5 @@
 namespace Kyc.Aggregation.Application.Models;
 
-/// <summary>
-/// KYC form data returned from the Customer Data API.
-/// </summary>
 public class KycFormData
 {
     /// <summary>

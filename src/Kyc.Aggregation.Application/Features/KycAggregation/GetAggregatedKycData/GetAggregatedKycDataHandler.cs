@@ -10,34 +10,24 @@ namespace Kyc.Aggregation.Application.Features.KycAggregation.GetAggregatedKycDa
 /// <summary>
 /// Handler for aggregating KYC data from multiple sources with caching support.
 /// </summary>
-public class GetAggregatedKycDataHandler : IRequestHandler<GetAggregatedKycDataQuery, AggregatedKycDataDto>
+public class GetAggregatedKycDataHandler(
+    IKycHotCache hotCache,
+    IKycSnapshotStore snapshotStore,
+    ICustomerDataApiClient customerDataApiClient,
+    IClock clock,
+    IKycAggregationService aggregationService,
+    ILogger<GetAggregatedKycDataHandler> logger) : IRequestHandler<GetAggregatedKycDataQuery, AggregatedKycDataDto>
 {
-    private readonly IKycHotCache _hotCache;
-    private readonly IKycSnapshotStore _snapshotStore;
-    private readonly IClock _clock;
-    private readonly ICustomerDataApiClient _customerDataApiClient;
-    private readonly IKycAggregationService _aggregationService;
-    private readonly ILogger<GetAggregatedKycDataHandler> _logger;
+    private readonly IKycHotCache _hotCache = hotCache;
+    private readonly IKycSnapshotStore _snapshotStore = snapshotStore;
+    private readonly IClock _clock = clock;
+    private readonly ICustomerDataApiClient _customerDataApiClient = customerDataApiClient;
+    private readonly IKycAggregationService _aggregationService = aggregationService;
+    private readonly ILogger<GetAggregatedKycDataHandler> _logger = logger;
 
     // Cache TTL configuration
     private static readonly TimeSpan HotCacheTtl = TimeSpan.FromHours(1);
     private static readonly TimeSpan SnapshotFreshnessThreshold = TimeSpan.FromDays(7);
-
-    public GetAggregatedKycDataHandler(
-        IKycHotCache hotCache,
-        IKycSnapshotStore snapshotStore,
-        ICustomerDataApiClient customerDataApiClient,
-        IClock clock,
-        IKycAggregationService aggregationService,
-        ILogger<GetAggregatedKycDataHandler> logger)
-    {
-        _hotCache = hotCache;
-        _snapshotStore = snapshotStore;
-        _customerDataApiClient = customerDataApiClient;
-        _clock = clock;
-        _aggregationService = aggregationService;
-        _logger = logger;
-    }
 
     public async Task<AggregatedKycDataDto> Handle(GetAggregatedKycDataQuery request, CancellationToken cancellationToken)
     {

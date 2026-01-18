@@ -1,4 +1,5 @@
 using Kyc.Aggregation.Application.Abstractions;
+using Kyc.Aggregation.Application.Exceptions;
 using Kyc.Aggregation.Application.Models;
 using Kyc.Aggregation.Contracts;
 using Microsoft.Extensions.Logging;
@@ -52,10 +53,10 @@ public class KycAggregationService(ILogger<KycAggregationService> logger) : IKyc
             Ssn = ssn,
             FirstName = personalDetails.FirstName,
             LastName = personalDetails.LastName,
-            Address = address ?? throw new InvalidOperationException("Address is required but not available"),
+            Address = address ?? throw new ValidationException("Address is required but not available"),
             PhoneNumber = phoneNumber,
             Email = email,
-            TaxCountry = taxCountry ?? throw new InvalidOperationException("Tax country is required but not available"),
+            TaxCountry = taxCountry ?? throw new ValidationException("Tax country is required but not available"),
             Income = income
         };
     }

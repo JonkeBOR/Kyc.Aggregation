@@ -183,10 +183,14 @@ The service implements **two levels of caching**:
 
 ## Error Handling
 
-* Application-level errors are translated into meaningful API responses
-* System-level errors are logged
-* Exception handling is centralized via middleware
-* Controllers do not contain try/catch logic
+* Exception handling is centralized via middleware (API layer)
+* User-facing errors are returned as RFC7807 `application/problem+json` with a `traceId`
+* Application errors use typed exceptions:
+  * `NotFoundException`  404
+  * `ValidationException`  400
+  * `ExternalDependencyException`  503
+* System-level errors are logged with appropriate severity
+* Controllers and handlers remain thin and do not contain HTTP-specific error mapping
 
 ---
 

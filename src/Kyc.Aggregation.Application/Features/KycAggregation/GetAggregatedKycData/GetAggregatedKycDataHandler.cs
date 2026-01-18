@@ -1,5 +1,6 @@
 using Kyc.Aggregation.Contracts;
 using Kyc.Aggregation.Application.Abstractions;
+using Kyc.Aggregation.Application.Exceptions;
 using Kyc.Aggregation.Application.Mappers;
 using Kyc.Aggregation.Application.Services;
 using MediatR;
@@ -59,7 +60,7 @@ public class GetAggregatedKycDataHandler(
 
         if (personalDetails is null)
         {
-            throw new InvalidOperationException($"Customer not found for SSN: {ssn}");
+            throw new NotFoundException($"Customer not found for SSN: {ssn}");
         }
 
         var mappedPersonalDetails = PersonalDetailsMapper.Map(personalDetails);

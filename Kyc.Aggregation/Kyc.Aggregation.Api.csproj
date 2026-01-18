@@ -10,4 +10,10 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Kyc.Aggregation.Application\Kyc.Aggregation.Application.csproj" />
+    <ProjectReference Include="..\Kyc.Aggregation.Contracts\Kyc.Aggregation.Contracts.csproj" />
+    <ProjectReference Include="..\Kyc.Aggregation.Infrastructure\Kyc.Aggregation.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

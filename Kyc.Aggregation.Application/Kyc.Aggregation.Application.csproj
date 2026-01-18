@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Kyc.Aggregation.Contracts\Kyc.Aggregation.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -19,70 +19,50 @@ public class CustomerDataApiClient : ICustomerDataApiClient
         _logger = logger;
     }
 
-    public async Task<PersonalDetailsResponseDto?> GetPersonalDetailsAsync(string ssn, CancellationToken ct = default)
+    private async Task<T?> GetAsync<T>(string relativePath, string warningMessage, CancellationToken ct)
     {
         try
         {
-            var response = await _httpClient.GetAsync($"personal-details/{ssn}", ct);
+            var response = await _httpClient.GetAsync(relativePath, ct);
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Failed to fetch personal details for SSN {Ssn}: {StatusCode}", ssn, response.StatusCode);
-                return null;
+                _logger.LogWarning(warningMessage, response.StatusCode);
+                return default;
             }
 
             var json = await response.Content.ReadAsStringAsync(ct);
-            return System.Text.Json.JsonSerializer.Deserialize<PersonalDetailsResponseDto>(json);
+            return System.Text.Json.JsonSerializer.Deserialize<T>(json);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching personal details for SSN {Ssn}", ssn);
+            _logger.LogError(ex, "Error performing GET {RelativePath}", relativePath);
             throw;
         }
+    }
+
+    public async Task<PersonalDetailsResponseDto?> GetPersonalDetailsAsync(string ssn, CancellationToken ct = default)
+    {
+        return await GetAsync<PersonalDetailsResponseDto>(
+            $"personal-details/{ssn}",
+            $"Failed to fetch personal details for SSN {ssn}: {{StatusCode}}",
+            ct);
     }
 
     public async Task<ContactDetailsResponseDto?> GetContactDetailsAsync(string ssn, CancellationToken ct = default)
     {
-        try
-        {
-            var response = await _httpClient.GetAsync($"contact-details/{ssn}", ct);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger.LogWarning("Failed to fetch contact details for SSN {Ssn}: {StatusCode}", ssn, response.StatusCode);
-                return null;
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct);
-            return System.Text.Json.JsonSerializer.Deserialize<ContactDetailsResponseDto>(json);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching contact details for SSN {Ssn}", ssn);
-            throw;
-        }
+        return await GetAsync<ContactDetailsResponseDto>(
+            $"contact-details/{ssn}",
+            $"Failed to fetch contact details for SSN {ssn}: {{StatusCode}}",
+            ct);
     }
 
     public async Task<KycFormResponseDto?> GetKycFormAsync(string ssn, DateTime asOfDate, CancellationToken ct = default)
     {
-        try
-        {
-            var dateString = asOfDate.ToString("yyyy-MM-dd");
-            var response = await _httpClient.GetAsync($"kyc-form/{ssn}/{dateString}", ct);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger.LogWarning("Failed to fetch KYC form for SSN {Ssn}: {StatusCode}", ssn, response.StatusCode);
-                return null;
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct);
-            return System.Text.Json.JsonSerializer.Deserialize<KycFormResponseDto>(json);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching KYC form for SSN {Ssn}", ssn);
-            throw;
-        }
+        var dateString = asOfDate.ToString("yyyy-MM-dd");
+        return await GetAsync<KycFormResponseDto>(
+            $"kyc-form/{ssn}/{dateString}",
+            $"Failed to fetch KYC form for SSN {ssn}: {{StatusCode}}",
+            ct);
     }
 }

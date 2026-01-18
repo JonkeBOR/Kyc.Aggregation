@@ -11,39 +11,25 @@ namespace Kyc.Aggregation.Application.Features.KycAggregation.GetAggregatedKycDa
 /// Handler for aggregating KYC data from multiple sources with caching support.
 /// </summary>
 public class GetAggregatedKycDataHandler(
-    IKycHotCache hotCache,
-    IKycSnapshotStore snapshotStore,
+    IKycCacheSnapshotService cacheSnapshotService,
     ICustomerDataApiClient customerDataApiClient,
     IClock clock,
     IKycAggregationService aggregationService,
     ILogger<GetAggregatedKycDataHandler> logger) : IRequestHandler<GetAggregatedKycDataQuery, AggregatedKycDataDto>
 {
-    private readonly IKycHotCache _hotCache = hotCache;
-    private readonly IKycSnapshotStore _snapshotStore = snapshotStore;
+    private readonly IKycCacheSnapshotService _cacheSnapshotService = cacheSnapshotService;
     private readonly IClock _clock = clock;
     private readonly ICustomerDataApiClient _customerDataApiClient = customerDataApiClient;
     private readonly IKycAggregationService _aggregationService = aggregationService;
     private readonly ILogger<GetAggregatedKycDataHandler> _logger = logger;
 
-    // Cache TTL configuration
-    private static readonly TimeSpan HotCacheTtl = TimeSpan.FromHours(1);
-    private static readonly TimeSpan SnapshotFreshnessThreshold = TimeSpan.FromDays(7);
-
     public async Task<AggregatedKycDataDto> Handle(GetAggregatedKycDataQuery request, CancellationToken cancellationToken)
     {
         var ssn = request.Ssn;
 
-        if (_hotCache.TryGetValue(ssn, out var cachedSnapshot) && cachedSnapshot != null)
-        {
-            return cachedSnapshot.Data;
-        }
-
-        var snapshot = await _snapshotStore.GetLatestSnapshotAsync(ssn, cancellationToken);
-        if (snapshot != null && IsSnapshotFresh(snapshot))
-        {
-            UpdateHotCache(snapshot);
-            return snapshot.Data;
-        }
+        var cachedOrFreshData = await _cacheSnapshotService.TryGetCachedOrFreshSnapshotDataAsync(ssn, cancellationToken);
+        if (cachedOrFreshData is not null)
+            return cachedOrFreshData;
 
         var personalDetailsTask = _customerDataApiClient.GetPersonalDetailsAsync(ssn, cancellationToken);
         var contactDetailsTask = _customerDataApiClient.GetContactDetailsAsync(ssn, cancellationToken);
@@ -57,12 +43,11 @@ public class GetAggregatedKycDataHandler(
         {
             _logger.LogError(ex, "Error fetching data from external APIs for SSN: {Ssn}", ssn);
             
-            // Fallback to stale snapshot if available
-            if (snapshot != null)
+            var staleSnapshotData = await _cacheSnapshotService.TryGetStaleSnapshotDataAsync(ssn, cancellationToken);
+            if (staleSnapshotData is not null)
             {
                 _logger.LogWarning("Falling back to stale snapshot for SSN: {Ssn}", ssn);
-                UpdateHotCache(snapshot);
-                return snapshot.Data;
+                return staleSnapshotData;
             }
 
             throw;
@@ -89,22 +74,9 @@ public class GetAggregatedKycDataHandler(
             Data = aggregatedData,
             FetchedAtUtc = _clock.UtcNow
         };
-        await _snapshotStore.SaveSnapshotAsync(newSnapshot, cancellationToken);
 
-        
-        UpdateHotCache(newSnapshot);
+        await _cacheSnapshotService.SaveSnapshotAndUpdateHotCacheAsync(newSnapshot, cancellationToken);
 
         return aggregatedData;
-    }
-
-    private bool IsSnapshotFresh(KycSnapshot snapshot)
-    {
-        var age = _clock.UtcNow - snapshot.FetchedAtUtc;
-        return age < SnapshotFreshnessThreshold;
-    }
-
-    private void UpdateHotCache(KycSnapshot snapshot)
-    {
-        _hotCache.Set(snapshot.Ssn, snapshot, HotCacheTtl);
     }
 }

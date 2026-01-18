@@ -1,6 +1,0 @@
-@Kyc.Aggregation_HostAddress = http://localhost:5268
-
-GET {{Kyc.Aggregation_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

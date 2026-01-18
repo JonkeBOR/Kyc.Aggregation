@@ -11,48 +11,26 @@ namespace Kyc.Aggregation.Application.Features.KycAggregation.GetAggregatedKycDa
 /// Handler for aggregating KYC data from multiple sources with caching support.
 /// </summary>
 public class GetAggregatedKycDataHandler(
-    IKycHotCache hotCache,
-    IKycSnapshotStore snapshotStore,
+    IKycCacheSnapshotService cacheSnapshotService,
     ICustomerDataApiClient customerDataApiClient,
     IClock clock,
     IKycAggregationService aggregationService,
     ILogger<GetAggregatedKycDataHandler> logger) : IRequestHandler<GetAggregatedKycDataQuery, AggregatedKycDataDto>
 {
-    private readonly IKycHotCache _hotCache = hotCache;
-    private readonly IKycSnapshotStore _snapshotStore = snapshotStore;
+    private readonly IKycCacheSnapshotService _cacheSnapshotService = cacheSnapshotService;
     private readonly IClock _clock = clock;
     private readonly ICustomerDataApiClient _customerDataApiClient = customerDataApiClient;
     private readonly IKycAggregationService _aggregationService = aggregationService;
     private readonly ILogger<GetAggregatedKycDataHandler> _logger = logger;
 
-    // Cache TTL configuration
-    private static readonly TimeSpan HotCacheTtl = TimeSpan.FromHours(1);
-    private static readonly TimeSpan SnapshotFreshnessThreshold = TimeSpan.FromDays(7);
-
     public async Task<AggregatedKycDataDto> Handle(GetAggregatedKycDataQuery request, CancellationToken cancellationToken)
     {
         var ssn = request.Ssn;
-        _logger.LogInformation("Processing KYC aggregation request for SSN: {Ssn}", ssn);
 
-        // 1. Try hot cache (in-memory)
-        if (_hotCache.TryGetValue(ssn, out var cachedData) && cachedData != null)
-        {
-            _logger.LogInformation("KYC data found in hot cache for SSN: {Ssn}", ssn);
-            return cachedData;
-        }
+        var cachedOrFreshData = await _cacheSnapshotService.TryGetCachedOrFreshSnapshotDataAsync(ssn, cancellationToken);
+        if (cachedOrFreshData is not null)
+            return cachedOrFreshData;
 
-        // 2. Try persistent snapshot
-        var snapshot = await _snapshotStore.GetLatestSnapshotAsync(ssn, cancellationToken);
-        if (snapshot != null && IsSnapshotFresh(snapshot))
-        {
-            _logger.LogInformation("KYC data found in persistent store for SSN: {Ssn}, cached at {FetchedAt}", 
-                ssn, snapshot.FetchedAtUtc);
-            UpdateHotCache(ssn, snapshot.Data);
-            return snapshot.Data;
-        }
-
-        // 3. Fetch from external APIs in parallel
-        _logger.LogInformation("Fetching KYC data from external APIs for SSN: {Ssn}", ssn);
         var personalDetailsTask = _customerDataApiClient.GetPersonalDetailsAsync(ssn, cancellationToken);
         var contactDetailsTask = _customerDataApiClient.GetContactDetailsAsync(ssn, cancellationToken);
         var kycFormTask = _customerDataApiClient.GetKycFormAsync(ssn, _clock.UtcNow, cancellationToken);
@@ -65,12 +43,11 @@ public class GetAggregatedKycDataHandler(
         {
             _logger.LogError(ex, "Error fetching data from external APIs for SSN: {Ssn}", ssn);
             
-            // Fallback to stale snapshot if available
-            if (snapshot != null)
+            var staleSnapshotData = await _cacheSnapshotService.TryGetStaleSnapshotDataAsync(ssn, cancellationToken);
+            if (staleSnapshotData is not null)
             {
                 _logger.LogWarning("Falling back to stale snapshot for SSN: {Ssn}", ssn);
-                UpdateHotCache(ssn, snapshot.Data);
-                return snapshot.Data;
+                return staleSnapshotData;
             }
 
             throw;
@@ -85,38 +62,21 @@ public class GetAggregatedKycDataHandler(
             throw new InvalidOperationException($"Customer not found for SSN: {ssn}");
         }
 
-        // 4. Map vendor DTOs to application models
         var mappedPersonalDetails = PersonalDetailsMapper.Map(personalDetails);
         var mappedContactDetails = ContactDetailsMapper.Map(contactDetails);
         var mappedKycForm = KycFormMapper.Map(kycForm);
-
-        // 5. Aggregate data
+        
         var aggregatedData = _aggregationService.AggregateData(ssn, mappedPersonalDetails, mappedContactDetails, mappedKycForm);
-
-        // 6. Persist snapshot
+        
         var newSnapshot = new KycSnapshot
         {
             Ssn = ssn,
             Data = aggregatedData,
             FetchedAtUtc = _clock.UtcNow
         };
-        await _snapshotStore.SaveSnapshotAsync(newSnapshot, cancellationToken);
 
-        // 7. Update hot cache
-        UpdateHotCache(ssn, aggregatedData);
+        await _cacheSnapshotService.SaveSnapshotAndUpdateHotCacheAsync(newSnapshot, cancellationToken);
 
-        _logger.LogInformation("Successfully aggregated and cached KYC data for SSN: {Ssn}", ssn);
         return aggregatedData;
-    }
-
-    private bool IsSnapshotFresh(KycSnapshot snapshot)
-    {
-        var age = _clock.UtcNow - snapshot.FetchedAtUtc;
-        return age < SnapshotFreshnessThreshold;
-    }
-
-    private void UpdateHotCache(string ssn, AggregatedKycDataDto data)
-    {
-        _hotCache.Set(ssn, data, HotCacheTtl);
     }
 }

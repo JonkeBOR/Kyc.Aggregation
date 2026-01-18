@@ -1,5 +1,4 @@
 using Kyc.Aggregation.Application.Abstractions;
-using Kyc.Aggregation.Contracts;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -15,24 +14,24 @@ public class MemoryKycHotCache(IMemoryCache cache, ILogger<MemoryKycHotCache> lo
 
     private const string CacheKeyPrefix = "kyc:";
 
-    public bool TryGetValue(string ssn, out AggregatedKycDataDto? data)
+    public bool TryGetValue(string ssn, out KycSnapshot? snapshot)
     {
         var key = BuildCacheKey(ssn);
-        var result = _cache.TryGetValue(key, out AggregatedKycDataDto? cachedData);
+        var result = _cache.TryGetValue(key, out KycSnapshot? cachedSnapshot);
 
         if (result)
         {
             _logger.LogDebug("Hot cache hit for SSN {Ssn}", ssn);
         }
 
-        data = cachedData;
+        snapshot = cachedSnapshot;
         return result;
     }
 
-    public void Set(string ssn, AggregatedKycDataDto data, TimeSpan absoluteExpiration)
+    public void Set(string ssn, KycSnapshot snapshot, TimeSpan absoluteExpiration)
     {
         var key = BuildCacheKey(ssn);
-        _cache.Set(key, data, new MemoryCacheEntryOptions
+        _cache.Set(key, snapshot, new MemoryCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = absoluteExpiration
         });

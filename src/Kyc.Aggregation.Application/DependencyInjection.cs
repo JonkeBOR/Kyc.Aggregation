@@ -19,6 +19,7 @@ public static class DependencyInjection
 
         // Register application services
         services.AddScoped<IKycAggregationService, KycAggregationService>();
+        services.AddScoped<IKycCacheSnapshotService, KycCacheSnapshotService>();
 
         return services;
     }

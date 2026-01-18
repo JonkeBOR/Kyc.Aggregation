@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="Kyc.Aggregation.Application/Kyc.Aggregation.Application.csproj" />
+    <Project Path="Kyc.Aggregation.Contracts/Kyc.Aggregation.Contracts.csproj" />
+    <Project Path="Kyc.Aggregation.Infrastructure/Kyc.Aggregation.Infrastructure.csproj" />
+    <Project Path="Kyc.Aggregation/Kyc.Aggregation.Api.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/Kyc.Aggregation.Application.Tests/Kyc.Aggregation.Application.Tests.csproj" />
+  </Folder>
+</Solution>

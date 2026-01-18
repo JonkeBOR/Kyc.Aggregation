@@ -8,7 +8,7 @@ namespace Kyc.Aggregation.Application.Mappers;
 /// </summary>
 public static class KycFormMapper
 {
-    public static KycFormData? Map(KycFormResponseDto? dto)
+    public static KycFormData? ToKycFormData(this KycFormResponseDto? dto)
     {
         if (dto?.Items == null)
             return null;

@@ -8,7 +8,7 @@ namespace Kyc.Aggregation.Application.Mappers;
 /// </summary>
 public static class ContactDetailsMapper
 {
-    public static ContactDetailsData? Map(ContactDetailsResponseDto? dto)
+    public static ContactDetailsData? ToContactDetailsData(this ContactDetailsResponseDto? dto)
     {
         if (dto == null)
             return null;

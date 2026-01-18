@@ -62,12 +62,8 @@ public class GetAggregatedKycDataHandler(
         {
             throw new NotFoundException($"Customer not found for SSN: {ssn}");
         }
-
-        var mappedPersonalDetails = PersonalDetailsMapper.Map(personalDetails);
-        var mappedContactDetails = ContactDetailsMapper.Map(contactDetails);
-        var mappedKycForm = KycFormMapper.Map(kycForm);
         
-        var aggregatedData = _aggregationService.AggregateData(ssn, mappedPersonalDetails, mappedContactDetails, mappedKycForm);
+        var aggregatedData = _aggregationService.AggregateData(ssn, personalDetails.ToPersonalDetailsData(), contactDetails.ToContactDetailsData(), kycForm.ToKycFormData());
         
         var newSnapshot = new KycSnapshot
         {

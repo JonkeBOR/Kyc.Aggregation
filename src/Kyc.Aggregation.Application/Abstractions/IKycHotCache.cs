@@ -1,5 +1,3 @@
-using Kyc.Aggregation.Contracts;
-
 namespace Kyc.Aggregation.Application.Abstractions;
 
 /// <summary>
@@ -10,10 +8,10 @@ public interface IKycHotCache
     /// <summary>
     /// Gets cached data for a customer by SSN.
     /// </summary>
-    bool TryGetValue(string ssn, out AggregatedKycDataDto? data);
+    bool TryGetValue(string ssn, out KycSnapshot? snapshot);
 
     /// <summary>
     /// Sets or updates cached data for a customer.
     /// </summary>
-    void Set(string ssn, AggregatedKycDataDto data, TimeSpan absoluteExpiration);
+    void Set(string ssn, KycSnapshot snapshot, TimeSpan absoluteExpiration);
 }

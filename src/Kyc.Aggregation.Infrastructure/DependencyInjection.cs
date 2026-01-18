@@ -39,6 +39,11 @@ public static class DependencyInjection
         // Register HTTP client for the Customer Data API
         var apiBaseUrl = configuration.GetSection("CustomerDataApi:BaseUrl").Value
             ?? "https://customerdataapi.azurewebsites.net/api";
+
+        // Ensure BaseAddress ends with / for proper URI combining
+        if (!apiBaseUrl.EndsWith("/"))
+            apiBaseUrl += "/";
+
         var timeoutSeconds = configuration.GetSection("CustomerDataApi:TimeoutSeconds").Get<int?>() ?? 30;
 
         services.AddHttpClient<ICustomerDataApiClient, CustomerDataApiClient>(client =>

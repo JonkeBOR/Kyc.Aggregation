@@ -1,5 +1,5 @@
-using Kyc.Aggregation.Application.Abstractions;
 using Kyc.Aggregation.Application.Models;
+using Kyc.Aggregation.Application.Models.ExternalApis;
 
 namespace Kyc.Aggregation.Application.Mappers;
 
@@ -15,7 +15,7 @@ public static class ContactDetailsMapper
 
         return new ContactDetailsData
         {
-            Address = BuildAddress(dto.Address),
+            Address = BuildAddress(dto.Addresses),
             Email = GetPreferredEmail(dto.Emails),
             PhoneNumber = GetPreferredPhoneNumber(dto.PhoneNumbers)
         };

@@ -1,4 +1,5 @@
 using Kyc.Aggregation.Application.Abstractions;
+using Kyc.Aggregation.Application.Models.ExternalApis;
 using Microsoft.Extensions.Logging;
 
 namespace Kyc.Aggregation.Infrastructure.ExternalApis;
@@ -22,7 +23,7 @@ public class CustomerDataApiClient : ICustomerDataApiClient
     {
         try
         {
-            var response = await _httpClient.GetAsync($"/personal-details/{ssn}", ct);
+            var response = await _httpClient.GetAsync($"personal-details/{ssn}", ct);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -44,7 +45,7 @@ public class CustomerDataApiClient : ICustomerDataApiClient
     {
         try
         {
-            var response = await _httpClient.GetAsync($"/contact-details/{ssn}", ct);
+            var response = await _httpClient.GetAsync($"contact-details/{ssn}", ct);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -67,7 +68,7 @@ public class CustomerDataApiClient : ICustomerDataApiClient
         try
         {
             var dateString = asOfDate.ToString("yyyy-MM-dd");
-            var response = await _httpClient.GetAsync($"/kyc-form/{ssn}/{dateString}", ct);
+            var response = await _httpClient.GetAsync($"kyc-form/{ssn}/{dateString}", ct);
 
             if (!response.IsSuccessStatusCode)
             {

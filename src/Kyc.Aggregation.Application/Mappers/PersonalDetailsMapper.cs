@@ -1,5 +1,5 @@
-using Kyc.Aggregation.Application.Abstractions;
 using Kyc.Aggregation.Application.Models;
+using Kyc.Aggregation.Application.Models.ExternalApis;
 
 namespace Kyc.Aggregation.Application.Mappers;
 

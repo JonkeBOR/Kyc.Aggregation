@@ -1,7 +1,7 @@
 using Kyc.Aggregation.Application.Interfaces;
 using Kyc.Aggregation.Application.Models;
 using Kyc.Aggregation.Contracts;
-using Kyc.Aggregation.Infrastructure.Persistence;
+using Kyc.Aggregation.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;

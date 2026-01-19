@@ -2,7 +2,7 @@ using Kyc.Aggregation.Api;
 using Kyc.Aggregation.Api.Extensions;
 using Kyc.Aggregation.Application;
 using Kyc.Aggregation.Infrastructure;
-using Kyc.Aggregation.Infrastructure.Persistence;
+using Kyc.Aggregation.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,4 +1,4 @@
-namespace Kyc.Aggregation.Application.Abstractions;
+namespace Kyc.Aggregation.Application.Interfaces;
 
 /// <summary>
 /// Time abstraction for testability and consistent clock behavior.

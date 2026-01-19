@@ -1,7 +1,7 @@
 using Kyc.Aggregation.Contracts;
 using MediatR;
 
-namespace Kyc.Aggregation.Application.Features.KycAggregation.GetAggregatedKycData;
+namespace Kyc.Aggregation.Application.Features.GetAggregatedKycData;
 
 /// <summary>
 /// Query to retrieve aggregated KYC data for a customer.

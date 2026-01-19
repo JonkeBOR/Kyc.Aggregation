@@ -1,17 +1,9 @@
 using Kyc.Aggregation.Application.Exceptions;
+using Kyc.Aggregation.Application.Interfaces;
 using Kyc.Aggregation.Application.Models;
 using Kyc.Aggregation.Contracts;
 
 namespace Kyc.Aggregation.Application.Services;
-
-public interface IKycAggregationService
-{
-    AggregatedKycDataDto AggregateData(
-        string ssn,
-        PersonalDetailsData personalDetails,
-        ContactDetailsData? contactDetails,
-        KycFormData? kycForm);
-}
 
 public class KycAggregationService() : IKycAggregationService
 {

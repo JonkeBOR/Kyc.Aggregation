@@ -1,4 +1,4 @@
-using Kyc.Aggregation.Application.Features.KycAggregation.GetAggregatedKycData;
+using Kyc.Aggregation.Application.Features.GetAggregatedKycData;
 using Kyc.Aggregation.Contracts;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

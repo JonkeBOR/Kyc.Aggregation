@@ -1,16 +1,8 @@
-using Kyc.Aggregation.Application.Abstractions;
+using Kyc.Aggregation.Application.Interfaces;
+using Kyc.Aggregation.Application.Models;
 using Kyc.Aggregation.Contracts;
 
 namespace Kyc.Aggregation.Application.Services;
-
-public interface IKycCacheSnapshotService
-{
-    Task<AggregatedKycDataDto?> TryGetCachedOrFreshSnapshotDataAsync(string ssn, CancellationToken ct = default);
-
-    Task<AggregatedKycDataDto?> TryGetStaleSnapshotDataAsync(string ssn, CancellationToken ct = default);
-
-    Task SaveSnapshotAndUpdateHotCacheAsync(KycSnapshot snapshot, CancellationToken ct = default);
-}
 
 public class KycCacheSnapshotService(IKycHotCache hotCache, IKycSnapshotStore snapshotStore, IClock clock)
     : IKycCacheSnapshotService
@@ -34,19 +26,10 @@ public class KycCacheSnapshotService(IKycHotCache hotCache, IKycSnapshotStore sn
         {
             UpdateHotCache(snapshot);
             return snapshot.Data;
+
         }
 
         return null;
-    }
-
-    public async Task<AggregatedKycDataDto?> TryGetStaleSnapshotDataAsync(string ssn, CancellationToken ct = default)
-    {
-        var snapshot = await _snapshotStore.GetLatestSnapshotAsync(ssn, ct);
-        if (snapshot is null)
-            return null;
-
-        UpdateHotCache(snapshot);
-        return snapshot.Data;
     }
 
     public async Task SaveSnapshotAndUpdateHotCacheAsync(KycSnapshot snapshot, CancellationToken ct = default)

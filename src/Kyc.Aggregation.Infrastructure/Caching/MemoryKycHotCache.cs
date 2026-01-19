@@ -1,4 +1,5 @@
-using Kyc.Aggregation.Application.Abstractions;
+using Kyc.Aggregation.Application.Interfaces;
+using Kyc.Aggregation.Application.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 

@@ -1,9 +1,9 @@
-using Kyc.Aggregation.Application.Abstractions;
 using Kyc.Aggregation.Application.Exceptions;
+using Kyc.Aggregation.Application.Interfaces;
 using Kyc.Aggregation.Application.Models.ExternalApis;
 using Microsoft.Extensions.Logging;
 
-namespace Kyc.Aggregation.Infrastructure.ExternalApis;
+namespace Kyc.Aggregation.Infrastructure.Clients;
 
 /// <summary>
 /// HTTP client for the Customer Data API.

@@ -4,5 +4,6 @@ namespace Kyc.Aggregation.Application.Abstractions;
 
 public interface ICustomerKycDataProvider
 {
-    Task<CustomerKycInput> GetCustomerKycInputAsync(string ssn, CancellationToken ct = default);
+    Task<CustomerKycInput> 
+        GetCustomerKycInputAsync(string ssn, CancellationToken ct = default);
 }

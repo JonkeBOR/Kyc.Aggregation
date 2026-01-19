@@ -4,13 +4,6 @@ using Kyc.Aggregation.Contracts;
 
 namespace Kyc.Aggregation.Application.Services;
 
-public interface IKycCacheSnapshotService
-{
-    Task<AggregatedKycDataDto?> TryGetCachedOrFreshSnapshotDataAsync(string ssn, CancellationToken ct = default);
-
-    Task SaveSnapshotAndUpdateHotCacheAsync(KycSnapshot snapshot, CancellationToken ct = default);
-}
-
 public class KycCacheSnapshotService(IKycHotCache hotCache, IKycSnapshotStore snapshotStore, IClock clock)
     : IKycCacheSnapshotService
 {

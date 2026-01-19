@@ -30,42 +30,28 @@ public class GetAggregatedKycDataHandler(
         if (cachedOrFreshData is not null)
             return cachedOrFreshData;
 
-        try
+        var input = await _customerKycDataProvider.GetCustomerKycInputAsync(ssn, cancellationToken);
+
+        if (input.PersonalDetails is null)
+            throw new NotFoundException($"Customer not found for SSN: {ssn}");
+
+
+        var aggregatedData = _aggregationService.AggregateData(
+            ssn,
+            input.PersonalDetails,
+            input.ContactDetails,
+            input.KycForm);
+
+        var newSnapshot = new KycSnapshot
         {
-            var input = await _customerKycDataProvider.GetCustomerKycInputAsync(ssn, cancellationToken);
-            if (input.PersonalDetails is null)
-                throw new NotFoundException($"Customer not found for SSN: {ssn}");
+            Ssn = ssn,
+            Data = aggregatedData,
+            FetchedAtUtc = input.RequestedAtUtc
+        };
 
+        await _cacheSnapshotService.SaveSnapshotAndUpdateHotCacheAsync(newSnapshot, cancellationToken);
 
-            var aggregatedData = _aggregationService.AggregateData(
-                ssn,
-                input.PersonalDetails,
-                input.ContactDetails,
-                input.KycForm);
-
-            var newSnapshot = new KycSnapshot
-            {
-                Ssn = ssn,
-                Data = aggregatedData,
-                FetchedAtUtc = input.RequestedAtUtc
-            };
-
-            await _cacheSnapshotService.SaveSnapshotAndUpdateHotCacheAsync(newSnapshot, cancellationToken);
-
-            return aggregatedData;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching data from external APIs for SSN: {Ssn}", ssn);
-            
-            var staleSnapshotData = await _cacheSnapshotService.TryGetStaleSnapshotDataAsync(ssn, cancellationToken);
-            if (staleSnapshotData is not null)
-            {
-                _logger.LogWarning("Falling back to stale snapshot for SSN: {Ssn}", ssn);
-                return staleSnapshotData;
-            }
-
-            throw;
-        }
+        return aggregatedData;
+      
     }
 }

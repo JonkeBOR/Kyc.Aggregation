@@ -1,5 +1,4 @@
 using Kyc.Aggregation.Application.Models;
-using Kyc.Aggregation.Contracts;
 
 namespace Kyc.Aggregation.Application.Interfaces;
 

@@ -8,8 +8,6 @@ public interface IKycCacheSnapshotService
 {
     Task<AggregatedKycDataDto?> TryGetCachedOrFreshSnapshotDataAsync(string ssn, CancellationToken ct = default);
 
-    Task<AggregatedKycDataDto?> TryGetStaleSnapshotDataAsync(string ssn, CancellationToken ct = default);
-
     Task SaveSnapshotAndUpdateHotCacheAsync(KycSnapshot snapshot, CancellationToken ct = default);
 }
 
@@ -39,16 +37,6 @@ public class KycCacheSnapshotService(IKycHotCache hotCache, IKycSnapshotStore sn
         }
 
         return null;
-    }
-
-    public async Task<AggregatedKycDataDto?> TryGetStaleSnapshotDataAsync(string ssn, CancellationToken ct = default)
-    {
-        var snapshot = await _snapshotStore.GetLatestSnapshotAsync(ssn, ct);
-        if (snapshot is null)
-            return null;
-
-        UpdateHotCache(snapshot);
-        return snapshot.Data;
     }
 
     public async Task SaveSnapshotAndUpdateHotCacheAsync(KycSnapshot snapshot, CancellationToken ct = default)

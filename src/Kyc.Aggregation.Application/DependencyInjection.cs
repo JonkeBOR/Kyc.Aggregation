@@ -2,6 +2,7 @@ using Kyc.Aggregation.Application.Interfaces;
 using Kyc.Aggregation.Application.Services;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Kyc.Aggregation.Application.Workflows;
 
 namespace Kyc.Aggregation.Application;
 
@@ -22,6 +23,12 @@ public static class DependencyInjection
         services.AddScoped<IKycAggregationService, KycAggregationService>();
         services.AddScoped<IKycCacheSnapshotService, KycCacheSnapshotService>();
         services.AddScoped<ICustomerKycDataProvider, CustomerKycDataProvider>();
+        services.AddScoped<GetAggregatedKycDataWorkflow>();
+        services.AddScoped<IGetAggregatedKycDataWorkflow>(sp =>
+            new CachedGetAggregatedKycDataWorkflow(
+                sp.GetRequiredService<GetAggregatedKycDataWorkflow>(),
+                sp.GetRequiredService<IKycCacheSnapshotService>(),
+                sp.GetRequiredService<IClock>()));
 
         return services;
     }

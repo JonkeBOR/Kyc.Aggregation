@@ -1,7 +1,6 @@
 using Kyc.Aggregation.Contracts;
 using Kyc.Aggregation.Application.Abstractions;
 using Kyc.Aggregation.Application.Exceptions;
-using Kyc.Aggregation.Application.Mappers;
 using Kyc.Aggregation.Application.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -13,14 +12,12 @@ namespace Kyc.Aggregation.Application.Features.KycAggregation.GetAggregatedKycDa
 /// </summary>
 public class GetAggregatedKycDataHandler(
     IKycCacheSnapshotService cacheSnapshotService,
-    ICustomerDataApiClient customerDataApiClient,
-    IClock clock,
+    ICustomerKycDataProvider customerKycDataProvider,
     IKycAggregationService aggregationService,
     ILogger<GetAggregatedKycDataHandler> logger) : IRequestHandler<GetAggregatedKycDataQuery, AggregatedKycDataDto>
 {
     private readonly IKycCacheSnapshotService _cacheSnapshotService = cacheSnapshotService;
-    private readonly IClock _clock = clock;
-    private readonly ICustomerDataApiClient _customerDataApiClient = customerDataApiClient;
+    private readonly ICustomerKycDataProvider _customerKycDataProvider = customerKycDataProvider;
     private readonly IKycAggregationService _aggregationService = aggregationService;
     private readonly ILogger<GetAggregatedKycDataHandler> _logger = logger;
 
@@ -32,13 +29,29 @@ public class GetAggregatedKycDataHandler(
         if (cachedOrFreshData is not null)
             return cachedOrFreshData;
 
-        var personalDetailsTask = _customerDataApiClient.GetPersonalDetailsAsync(ssn, cancellationToken);
-        var contactDetailsTask = _customerDataApiClient.GetContactDetailsAsync(ssn, cancellationToken);
-        var kycFormTask = _customerDataApiClient.GetKycFormAsync(ssn, _clock.UtcNow, cancellationToken);
-
         try
         {
-            await Task.WhenAll(personalDetailsTask, contactDetailsTask, kycFormTask);
+            var input = await _customerKycDataProvider.GetCustomerKycInputAsync(ssn, cancellationToken);
+            if (input.PersonalDetails is null)
+                throw new NotFoundException($"Customer not found for SSN: {ssn}");
+
+
+            var aggregatedData = _aggregationService.AggregateData(
+                ssn,
+                input.PersonalDetails,
+                input.ContactDetails,
+                input.KycForm);
+
+            var newSnapshot = new KycSnapshot
+            {
+                Ssn = ssn,
+                Data = aggregatedData,
+                FetchedAtUtc = input.RequestedAtUtc
+            };
+
+            await _cacheSnapshotService.SaveSnapshotAndUpdateHotCacheAsync(newSnapshot, cancellationToken);
+
+            return aggregatedData;
         }
         catch (Exception ex)
         {
@@ -53,27 +66,5 @@ public class GetAggregatedKycDataHandler(
 
             throw;
         }
-
-        var personalDetails = personalDetailsTask.Result;
-        var contactDetails = contactDetailsTask.Result;
-        var kycForm = kycFormTask.Result;
-
-        if (personalDetails is null)
-        {
-            throw new NotFoundException($"Customer not found for SSN: {ssn}");
-        }
-        
-        var aggregatedData = _aggregationService.AggregateData(ssn, personalDetails.ToPersonalDetailsData(), contactDetails.ToContactDetailsData(), kycForm.ToKycFormData());
-        
-        var newSnapshot = new KycSnapshot
-        {
-            Ssn = ssn,
-            Data = aggregatedData,
-            FetchedAtUtc = _clock.UtcNow
-        };
-
-        await _cacheSnapshotService.SaveSnapshotAndUpdateHotCacheAsync(newSnapshot, cancellationToken);
-
-        return aggregatedData;
     }
 }

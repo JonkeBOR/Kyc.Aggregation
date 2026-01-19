@@ -1,3 +1,4 @@
+using Kyc.Aggregation.Application.Abstractions;
 using Kyc.Aggregation.Application.Services;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ public static class DependencyInjection
         // Register application services
         services.AddScoped<IKycAggregationService, KycAggregationService>();
         services.AddScoped<IKycCacheSnapshotService, KycCacheSnapshotService>();
+        services.AddScoped<ICustomerKycDataProvider, CustomerKycDataProvider>();
 
         return services;
     }

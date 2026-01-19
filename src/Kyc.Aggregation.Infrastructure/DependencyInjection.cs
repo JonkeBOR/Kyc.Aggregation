@@ -1,4 +1,4 @@
-using Kyc.Aggregation.Application.Abstractions;
+using Kyc.Aggregation.Application.Interfaces;
 using Kyc.Aggregation.Infrastructure.Caching;
 using Kyc.Aggregation.Infrastructure.ExternalApis;
 using Kyc.Aggregation.Infrastructure.Persistence;

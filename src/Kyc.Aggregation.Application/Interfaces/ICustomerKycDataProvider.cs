@@ -1,6 +1,6 @@
 using Kyc.Aggregation.Application.Models;
 
-namespace Kyc.Aggregation.Application.Abstractions;
+namespace Kyc.Aggregation.Application.Interfaces;
 
 public interface ICustomerKycDataProvider
 {

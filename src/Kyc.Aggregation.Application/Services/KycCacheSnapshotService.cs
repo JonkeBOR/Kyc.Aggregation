@@ -1,4 +1,5 @@
-using Kyc.Aggregation.Application.Abstractions;
+using Kyc.Aggregation.Application.Interfaces;
+using Kyc.Aggregation.Application.Models;
 using Kyc.Aggregation.Contracts;
 
 namespace Kyc.Aggregation.Application.Services;
@@ -34,6 +35,7 @@ public class KycCacheSnapshotService(IKycHotCache hotCache, IKycSnapshotStore sn
         {
             UpdateHotCache(snapshot);
             return snapshot.Data;
+
         }
 
         return null;

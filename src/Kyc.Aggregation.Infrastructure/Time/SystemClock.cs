@@ -1,4 +1,4 @@
-using Kyc.Aggregation.Application.Abstractions;
+using Kyc.Aggregation.Application.Interfaces;
 
 namespace Kyc.Aggregation.Infrastructure.Time;
 

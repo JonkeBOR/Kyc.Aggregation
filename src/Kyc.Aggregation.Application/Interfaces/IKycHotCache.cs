@@ -1,4 +1,6 @@
-namespace Kyc.Aggregation.Application.Abstractions;
+using Kyc.Aggregation.Application.Models;
+
+namespace Kyc.Aggregation.Application.Interfaces;
 
 /// <summary>
 /// In-memory cache for aggregated KYC data.

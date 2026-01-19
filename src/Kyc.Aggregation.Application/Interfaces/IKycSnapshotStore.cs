@@ -1,6 +1,7 @@
+using Kyc.Aggregation.Application.Models;
 using Kyc.Aggregation.Contracts;
 
-namespace Kyc.Aggregation.Application.Abstractions;
+namespace Kyc.Aggregation.Application.Interfaces;
 
 /// <summary>
 /// Persistent storage for KYC data snapshots.
@@ -18,9 +19,3 @@ public interface IKycSnapshotStore
     Task SaveSnapshotAsync(KycSnapshot snapshot, CancellationToken ct = default);
 }
 
-public class KycSnapshot
-{
-    public required string Ssn { get; set; }
-    public required AggregatedKycDataDto Data { get; set; }
-    public DateTime FetchedAtUtc { get; set; } = DateTime.UtcNow;
-}

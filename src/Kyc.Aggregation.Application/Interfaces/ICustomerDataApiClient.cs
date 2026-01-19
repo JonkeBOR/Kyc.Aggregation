@@ -1,6 +1,6 @@
 ﻿using Kyc.Aggregation.Application.Models.ExternalApis;
 
-namespace Kyc.Aggregation.Application.Abstractions;
+namespace Kyc.Aggregation.Application.Interfaces;
 
 /// <summary>
 /// Unified interface for the Customer Data API client.

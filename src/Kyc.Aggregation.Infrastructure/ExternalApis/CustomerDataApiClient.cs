@@ -1,5 +1,5 @@
-using Kyc.Aggregation.Application.Abstractions;
 using Kyc.Aggregation.Application.Exceptions;
+using Kyc.Aggregation.Application.Interfaces;
 using Kyc.Aggregation.Application.Models.ExternalApis;
 using Microsoft.Extensions.Logging;
 

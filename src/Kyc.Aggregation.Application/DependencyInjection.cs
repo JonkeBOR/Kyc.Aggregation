@@ -1,4 +1,4 @@
-using Kyc.Aggregation.Application.Abstractions;
+using Kyc.Aggregation.Application.Interfaces;
 using Kyc.Aggregation.Application.Services;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;

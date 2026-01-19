@@ -1,11 +1,12 @@
 using Kyc.Aggregation.Contracts;
-using Kyc.Aggregation.Application.Abstractions;
 using Kyc.Aggregation.Application.Exceptions;
 using Kyc.Aggregation.Application.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Kyc.Aggregation.Application.Models;
+using Kyc.Aggregation.Application.Interfaces;
 
-namespace Kyc.Aggregation.Application.Features.KycAggregation.GetAggregatedKycData;
+namespace Kyc.Aggregation.Application.Features.GetAggregatedKycData;
 
 /// <summary>
 /// Handler for aggregating KYC data from multiple sources with caching support.

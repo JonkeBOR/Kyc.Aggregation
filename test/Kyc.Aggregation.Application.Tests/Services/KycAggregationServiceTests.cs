@@ -9,7 +9,7 @@ namespace Kyc.Aggregation.Application.Tests.Services;
 public class KycAggregationServiceTests_AggregateData
 {
     [Fact]
-    public void AggregateData_MapsSsn()
+    public void AggregateData_MapsSsn_GivenValidInput()
     {
         // Arrange
         var sut = CreateSut();
@@ -23,7 +23,7 @@ public class KycAggregationServiceTests_AggregateData
     }
 
     [Fact]
-    public void AggregateData_MapsFirstName()
+    public void AggregateData_MapsFirstName_GivenValidInput()
     {
         // Arrange
         var sut = CreateSut();
@@ -40,7 +40,7 @@ public class KycAggregationServiceTests_AggregateData
     }
 
     [Fact]
-    public void AggregateData_MapsLastName()
+    public void AggregateData_MapsLastName_GivenValidInput()
     {
         // Arrange
         var sut = CreateSut();
@@ -57,7 +57,7 @@ public class KycAggregationServiceTests_AggregateData
     }
 
     [Fact]
-    public void AggregateData_MapsAddress()
+    public void AggregateData_MapsAddress_GivenValidInput()
     {
         // Arrange
         var sut = CreateSut();

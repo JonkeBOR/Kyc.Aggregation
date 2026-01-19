@@ -1,7 +1,7 @@
 using Kyc.Aggregation.Contracts;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kyc.Aggregation.Infrastructure.Persistence;
+namespace Kyc.Aggregation.Infrastructure.Context;
 
 /// <summary>
 /// Entity Framework DbContext for KYC aggregation persistent storage.

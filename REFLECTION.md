@@ -1,22 +1,39 @@
 ##### CAVEATS AND DESIGN DECISIONS
 
-# Persistence
+### 1. **Persistent Caching**
 
 The persistent cache stores the aggregated KYC snapshot returned by the service, rather than vendor-specific DTOs. 
 This reduces coupling to external schemas, simplifies persistence, and ensures the cache can directly satisfy future 
 requests even after application restarts
 
-Given more time and a larger amout of usecases/endpoints, I would consider moving the persistence logic into the mediatR behaviour pipeline instead, this would
-further separate concerns and allow for easier testing and maintenance.
+I opted for handling the caching strategy through multiple workflows injected using the decorator pattern, but if there were more endpoints requiring similar caching logic,
+I would consider implementing a more generic caching mechanism using pipeline behaviors in MediatR to reduce code duplication.
 
-# Error Handling
+### 2. **Error Handling**
 
-User-facing errors such as validation failures and not found errors are exposed to the user with clear messages, while system-level and unexpected errors are logged with detailed information for debugging.
-Given a larger scope and a more complex domain, I would consider adding more granular error types like domain-specific exceptions or infrastructure-related errors to provide better context and handling strategies.
+User-facing errors such as validation failures and not found errors are exposed to the user with clear messages, while system-level and unexpected errors are simply logged.
+Given a larger scope and a more complex domain, I would consider adding more granular error types 
+like domain-specific exceptions or infrastructure-related errors to provide better context and handling strategies.
 
-# Logging
+The logging strategy focuses on capturing essential information for error handling and not debug/information logs, to avoid excessive verbosity.
 
-The logging strategy focuses on capturing essential information for error handling, to avoid excessive verbosity.
+### 3. **Code Quality and Reusability**
+
+I opted for a clean architecture approach, left out the domain layer since this application doesnt own any entities. 
+The Infrastructure layer is designed to be swappable, the application layer simply exposes the interfaces.
+
+Each layer has its own DI extention method to make it easier to extend with more services
+
+### 4. **Unit Testing**
+
+The unit test file has a test harness which gathers common helper logic. Each public method that is tested is given a class, 
+and I opted for single line assertions to make it extra clear in the test output which method and path is failing or passing. 
+I'd rather have multiple smaller tests than to have one bigger test that is less specific. 
+Furthermore I try to keep the arrange act and assert sections as small as possible for readability
+
+Tests should generally follow the naming convention "Method-Outcome-GivenScenario"
+
+I used fakeitEasy because there might be mixed opinions on Moq due to past controversies regarding hidden telemetry.
 
 
 
@@ -165,7 +182,7 @@ This service uses **CQRS** with **MediatR**.
 * The API exposes a **single read-only query**:
   * `GetAggregatedKycData`
 * Controllers translate HTTP requests into queries
-* Handlers orchestrate:
+* Handlers pass the request onto workflows which orchestrate:
   1. In-memory cache lookup
   2. Persistent snapshot lookup
   3. External API calls (if needed)
@@ -193,60 +210,4 @@ The service implements **two levels of caching**:
 **Caching policy** is defined in the Application layer.
 **Caching mechanisms** are implemented in the Infrastructure layer.
 
----
 
-## Error Handling
-
-* Exception handling is centralized via middleware (API layer)
-* User-facing errors are returned as RFC7807 `application/problem+json` with a `traceId`
-* Application errors use typed exceptions:
-  * `NotFoundException`  404
-  * `ValidationException`  400
-  * `ExternalDependencyException`  503
-* System-level errors are logged with appropriate severity
-* Controllers and handlers remain thin and do not contain HTTP-specific error mapping
-
----
-
-## Testing Strategy
-
-* **Unit tests** target the Application layer
-* External dependencies are mocked via interfaces
-* Infrastructure and API are tested through integration tests if needed
-
----
-
-## Design Rationale
-
-* **No Domain layer:**
-  The service aggregates and caches data it does not own.
-
-* **Snapshot-based persistence:**
-  Persisted data is treated as a read model, not a rich entity.
-
-* **Interfaces in Application:**
-  Enables testability and clean separation of policy vs. implementation.
-
-* **Thin API layer:**
-  Ensures transport concerns do not leak into application logic.
-
----
-
-## Possible Future Improvements
-
-* Distributed cache (e.g. Redis)
-* Background refresh of stale snapshots
-* API versioning
-* Observability (metrics, tracing)
-* Circuit breakers for external APIs
-
----
-
-## Final Notes
-
-This project prioritizes:
-
-* Maintainability
-* Clear responsibility boundaries
-* Testability
-* Real-world pragmatism over theoretical purity

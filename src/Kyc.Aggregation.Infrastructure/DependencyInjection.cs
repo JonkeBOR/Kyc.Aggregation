@@ -1,7 +1,7 @@
 using Kyc.Aggregation.Application.Interfaces;
 using Kyc.Aggregation.Infrastructure.Caching;
 using Kyc.Aggregation.Infrastructure.Clients;
-using Kyc.Aggregation.Infrastructure.Persistence;
+using Kyc.Aggregation.Infrastructure.Context;
 using Kyc.Aggregation.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
